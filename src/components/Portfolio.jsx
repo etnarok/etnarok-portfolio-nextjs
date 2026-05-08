@@ -29,7 +29,7 @@ function Preloader({ onStarted }) {
       backgroundColor: '#0f172a', zIndex: 9999999, display: 'flex',
       flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: 'white'
     }}>
-      <img src="/images/logo.png" alt="Etnarok Logo" style={{ width: '150px', marginBottom: '20px', opacity: progress < 100 ? 0.8 : 1, transition: 'opacity 0.5s ease' }} />
+      <img src="public/images/logo.png" alt="Etnarok Logo" style={{ width: '150px', marginBottom: '20px', opacity: progress < 100 ? 0.8 : 1, transition: 'opacity 0.5s ease' }} />
       <h2 style={{ fontSize: '24px', marginBottom: '15px', letterSpacing: '2px' }}>MODELS LOADING</h2>
       
       <div style={{ width: '300px', height: '8px', backgroundColor: '#334155', borderRadius: '4px', overflow: 'hidden', marginBottom: '15px' }}>
