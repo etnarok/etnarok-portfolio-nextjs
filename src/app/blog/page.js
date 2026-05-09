@@ -49,6 +49,26 @@ export default async function BlogPage({ searchParams }) {
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         
+        {/* YENİ EKLENEN KISIM: Anasayfaya Dön Butonu */}
+        <div style={{ marginBottom: '20px' }}>
+          <Link href="/" style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '8px',
+            color: '#3b82f6', 
+            textDecoration: 'none',
+            fontSize: '16px',
+            fontWeight: 'bold',
+            padding: '10px 16px',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)', // Hafif mavi arka plan
+            borderRadius: '12px',
+            border: '1px solid rgba(59, 130, 246, 0.2)',
+            transition: 'all 0.3s ease'
+          }}>
+            <span style={{ fontSize: '20px', lineHeight: '1' }}>←</span> Portfolyoya Dön
+          </Link>
+        </div>
+
         <header style={{ marginBottom: '60px', textAlign: 'center' }}>
           <h1 style={{ fontSize: '48px', fontWeight: '800' }}>
             {currentCategory ? `#${currentCategory}` : 'Blog'}
