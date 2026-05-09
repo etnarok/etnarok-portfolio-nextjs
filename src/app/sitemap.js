@@ -1,12 +1,16 @@
 import { createClient } from 'next-sanity';
 
+// İŞTE SİHİRLİ KELİMELER: Next.js'e bu dosyanın dinamik olduğunu ve cache'lenmemesi gerektiğini söylüyoruz.
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Client'ı burada oluşturuyoruz, dışarıdan (lib/sanity vs.) çekmiyoruz 
 // Çünkü o dosyaların içinde 'use client' olabilir.
 const client = createClient({
   projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
   dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
   apiVersion: '2024-05-08',
-  useCdn: false,
+  useCdn: false, // CDN kapalı olsa bile Next.js sitemap'i önbelleğe alabilir, üstteki komutlar bunu engeller.
 });
 
 export default async function sitemap() {

@@ -1,12 +1,12 @@
-// src/App.jsx
+// src/components/Portfolio.jsx (veya src/App.jsx, senin dosya yoluna göre)
 import { Suspense, useState, useEffect } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Sky, Environment, Html, useProgress } from '@react-three/drei';
-// Artık zaten components klasöründe olduğumuz için direkt 3d klasörüne giriyoruz
+import { Sky, Environment, useProgress } from '@react-three/drei';
+import { useRouter } from 'next/navigation'; // YENİ: Next.js router'ı ekledik
+
 import Character from './3d/Character';
 import Level from './3d/Level';
 
-// hooks ve store klasörleri bir üst klasörde (src içinde) olduğu için "../" ile bir üste çıkıyoruz
 import { useControls } from '../hooks/useControls';
 import useStore from '../store/useStore';
 
@@ -44,6 +44,8 @@ function Preloader({ onStarted }) {
 }
 
 export default function Portfolio() {
+  const router = useRouter(); // YENİ: Yönlendirme için router'ı başlattık
+  
   useControls();
   const setMovement = useStore((state) => state.setMovement);
   const activeProject = useStore((state) => state.activeProject);
@@ -54,14 +56,11 @@ export default function Portfolio() {
   
   const [isPlaying, setIsPlaying] = useState(false); 
   const [isContactOpen, setIsContactOpen] = useState(false);
-  const [isSending, setIsSending] = useState(false); // Form gönderiliyor mu durumu
+  const [isSending, setIsSending] = useState(false);
 
-  // YENİ: Ses objelerini useState ile sabitliyoruz (React'in iki kere yükleme bug'ını çözer)
-  // DİKKAT: .wav mı .mp3 mü olduğunu kendi dosyana göre mutlaka kontrol et!
   const [bgm] = useState(() => new Audio('/sounds/bgm.mp3')); 
   const [closeSound] = useState(() => new Audio('/sounds/close.wav'));
 
-  // Oyun başladığında ses ayarlarını yapıyoruz
   useEffect(() => {
     bgm.loop = true;
     bgm.volume = 0.3;
@@ -80,7 +79,6 @@ export default function Portfolio() {
     setIsPlaying(!isPlaying);
   };
 
-  // YENİ: Mail Gönderme Fonksiyonu (Sayfa yenilenmez, arkadan gönderir)
   const handleContactSubmit = async (e) => {
     e.preventDefault();
     setIsSending(true);
@@ -88,7 +86,6 @@ export default function Portfolio() {
     const formData = new FormData(e.target);
 
     try {
-      // DİKKAT: BURAYA KENDİ FORMSPREE LİNKİNİ YAPIŞTIR
       const response = await fetch("https://formspree.io/f/mojrnjjv", {
         method: "POST",
         body: formData,
@@ -97,7 +94,7 @@ export default function Portfolio() {
 
       if (response.ok) {
         alert("Your message was sent successfully!");
-        setIsContactOpen(false); // Başarılıysa pop-up'ı kapat
+        setIsContactOpen(false);
       } else {
         alert("An error occurred. Please try again.");
       }
@@ -105,7 +102,7 @@ export default function Portfolio() {
       alert("A connection error occurred.");
     } finally {
       setIsSending(false);
-      e.target.reset(); // Formun içini temizle
+      e.target.reset();
     }
   };
 
@@ -116,6 +113,7 @@ export default function Portfolio() {
 
       {started && (
         <>
+          {/* SOL: İletişim Butonu */}
           <button
             onClick={() => setIsContactOpen(true)}
             style={{
@@ -130,6 +128,25 @@ export default function Portfolio() {
             ✉️
           </button>
 
+          {/* ORTA: Blog Butonu (YENİ EKLENDİ) */}
+          <button
+            onClick={() => {
+              if (isPlaying) bgm.pause(); // Blog sayfasına giderken arkadaki müziği susturur
+              router.push('/blog');
+            }}
+            style={{
+              position: 'absolute', top: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100,
+              padding: '0 20px', height: '45px', borderRadius: '25px', border: 'none',
+              backgroundColor: 'rgba(59, 130, 246, 0.8)', backdropFilter: 'blur(5px)',
+              color: 'white', fontSize: '16px', fontWeight: 'bold', cursor: 'pointer',
+              display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.3)', transition: 'background-color 0.3s ease'
+            }}
+          >
+            📝 Blog
+          </button>
+
+          {/* SAĞ: Müzik Butonu */}
           <button
             onClick={toggleMusic}
             style={{
@@ -146,7 +163,7 @@ export default function Portfolio() {
         </>
       )}
 
-      {/* YENİ İLETİŞİM FORMU (AJAX / Fetch ile) */}
+      {/* İLETİŞİM FORMU */}
       {isContactOpen && (
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
@@ -165,7 +182,6 @@ export default function Portfolio() {
             </p>
             
             <form onSubmit={handleContactSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-              {/* Formspree için özel replyto ayarı */}
               <input 
                 type="email" name="email" placeholder="Your Email Address" required
                 style={{ padding: '12px', borderRadius: '8px', border: 'none', backgroundColor: '#0f172a', color: 'white', outline: 'none' }}
@@ -188,6 +204,7 @@ export default function Portfolio() {
         </div>
       )}
 
+      {/* MOBİL HAREKET KONTROLLERİ */}
       {started && !activeProject && !isContactOpen && (
         <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10, display: 'flex' }}>
           <div style={{ flex: 1, opacity: 0 }} onTouchStart={() => setMovement(-1)} onTouchEnd={() => setMovement(0)} onMouseDown={() => setMovement(-1)} onMouseUp={() => setMovement(0)} onMouseLeave={() => setMovement(0)} />
@@ -195,6 +212,7 @@ export default function Portfolio() {
         </div>
       )}
 
+      {/* 3D SAHNE */}
       <Canvas camera={{ position: [0, 2, 8], fov: 50 }} dpr={[1, 1.5]} performance={{ min: 0.5 }}>
         <color attach="background" args={['#1a1a1a']} />
         <ambientLight intensity={0.6} />
@@ -207,20 +225,32 @@ export default function Portfolio() {
         </Suspense>
       </Canvas>
 
+      {/* PROJE DETAY EKRANI */}
       {activeProject && !isContactOpen && (
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
           backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(5px)',
-          zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center'
+          zIndex: 99999, display: 'flex', justifyContent: 'center', alignItems: 'center',
+          padding: '20px', boxSizing: 'border-box' // Mobilde kenarlardan boşluk bırakır
         }}>
           <div style={{
-            backgroundColor: '#1f2937', width: '90%', maxWidth: '450px',
+            backgroundColor: '#1f2937', width: '100%', maxWidth: '450px',
+            maxHeight: '90vh', // Ekrana sığmasını garanti altına alır
+            display: 'flex', flexDirection: 'column', // İçerikleri dikey ve esnek dizer
             borderRadius: '20px', padding: '25px', color: 'white',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
             border: `2px solid ${activeProject.color}`,
-            transform: 'translateY(0)', transition: 'all 0.3s ease-out'
+            transform: 'translateY(0)', transition: 'all 0.3s ease-out',
+            boxSizing: 'border-box'
           }}>
-            <div style={{ width: '100%', height: '200px', backgroundColor: activeProject.color, borderRadius: '12px', marginBottom: '20px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            
+            {/* Üst Kısım: Resim (Ezilmemesi için flexShrink: 0 verildi ve boyutu dinamik yapıldı) */}
+            <div style={{ 
+              width: '100%', 
+              height: 'min(200px, 25vh)', // Çok küçük telefonlarda resmi biraz küçültür
+              flexShrink: 0, 
+              backgroundColor: activeProject.color, borderRadius: '12px', marginBottom: '20px', overflow: 'hidden', display: 'flex', justifyContent: 'center', alignItems: 'center' 
+            }}>
               {activeProject.image ? (
                 <img src={activeProject.image} alt={activeProject.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
@@ -228,12 +258,26 @@ export default function Portfolio() {
               )}
             </div>
             
-            <h2 style={{ margin: '0 0 10px 0', fontSize: '28px' }}>{activeProject.title}</h2>
-            <p style={{ fontSize: '16px', lineHeight: '1.6', color: '#cbd5e1', marginBottom: '25px' }}>
-              {activeProject.detailedDescription}
-            </p>
+            {/* Başlık (Uzun başlıklar için dinamik font boyutu) */}
+            <h2 style={{ margin: '0 0 10px 0', fontSize: 'clamp(22px, 5vw, 28px)', flexShrink: 0 }}>
+              {activeProject.title}
+            </h2>
             
-            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '15px' }}>
+            {/* Orta Kısım: Açıklama (Asıl sihir burada, yazı sığmazsa sadece burası kayar) */}
+            <div style={{ 
+              overflowY: 'auto', 
+              marginBottom: '20px', 
+              paddingRight: '5px',
+              // Mobilde kaydırmanın yağ gibi akması için:
+              WebkitOverflowScrolling: 'touch' 
+            }}>
+              <p style={{ fontSize: '15px', lineHeight: '1.6', color: '#cbd5e1', margin: 0 }}>
+                {activeProject.detailedDescription}
+              </p>
+            </div>
+            
+            {/* Alt Kısım: Butonlar (Hep altta kalır ve ezilmez) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '15px', flexShrink: 0 }}>
               <button 
                 onClick={() => {
                   closeSound.play().catch(e => console.log(e));
@@ -253,6 +297,7 @@ export default function Portfolio() {
                 {activeProject.buttonText || "Projeye Git"}
               </button>
             </div>
+
           </div>
         </div>
       )}
